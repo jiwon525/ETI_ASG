@@ -75,7 +75,8 @@ func main() {
 			fmt.Scanf("%d\n", &UN)
 			fmt.Println("Please enter your Password: ")
 			fmt.Scanf("%d\n", &Pw)
-			CheckLogin(db, UN, Pw)
+			var PUser []Passenger
+			CheckLogin(db, PUser, UN, Pw)
 			passengeroptions()
 		case 2:
 			var UN, FN, LN, Email, Pw string
