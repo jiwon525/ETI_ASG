@@ -10,7 +10,8 @@ import (
 type Trips struct {
 	CurrLocation int
 	DestLocation int
-	DriverID     int
+	DriverID     int //driver NRIC
+	PUserName    int //passenger username
 }
 
 func GetTrip(db *sql.DB) {
