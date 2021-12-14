@@ -16,7 +16,7 @@ type Passenger struct {
 	Password  string
 }
 
-func GetPassengerList(db *sql.DB, PUser []Passenger, UN string, Pw string) { //for user verification
+func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for user verification
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/user_db")
 	results, err := db.Query("SELECT * FROM user_db.passenger")
 	if err != nil {
@@ -34,25 +34,22 @@ func GetPassengerList(db *sql.DB, PUser []Passenger, UN string, Pw string) { //f
 		//fmt.Println(passenger.UserName, passenger.FirstName, passenger.LastName, passenger.MobileNo, passenger.Email, passenger.Password)
 		PUser = append(PUser, Pssng)
 	}
-	fmt.Print(PUser)
+	fmt.Print(PUser) //just for testing
 	for _, v := range PUser {
 		if v.UserName == UN {
 			if v.Password == Pw {
-
+				fmt.Println("you are logged in.")
+				return 1
+			} else {
+				fmt.Println("user found but password is wrong")
+				return 2
 			}
+		} else {
+			fmt.Println("you have not signed in before, or have entered the wrong username")
+			return 3
 		}
 	}
-
-}
-func CheckLogin(db *sql.DB, UserName string, Password string) {
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/user_db")
-	if err != nil {
-		panic(err.Error())
-	}
-	var PUser []Passenger
-	GetPassengerList(db, PUser, UserName, Password) //check from the list of passengers if the username and password exists, and are the same
-	//if does not exist, print does not exist, if username found, but password =/=, indicate password wrong and to retry or exit.
-
+	return 0
 }
 
 func HandleErr(err error) {
