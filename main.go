@@ -11,18 +11,6 @@ import (
 
 var db *sql.DB
 
-func passengers() { //opening database for passenger
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/user_db")
-	// handle error
-	if err != nil {
-		fmt.Println("Error with opening database")
-		//panic(err.Error())
-	}
-
-	fmt.Println("Database opened")
-	// defer the close till after the function has finished executing
-	defer db.Close()
-}
 func drivers() { //opening database for driver
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/user_db")
 
@@ -46,28 +34,30 @@ func trips() { //opening database for trips
 	// defer the close till after the main function has finished executing
 	defer db.Close()
 }
-func PLogin() {
-	fmt.Println("log in page, input all the details.")
 
-}
-func passengeroptions(char int) {
+func passengeroptions() {
+	char := 0
+	var end bool
+	for end == false {
+		fmt.Println("1.Book a ride\n2.Retrieve past trips\n3.Edit account details\n4.Back")
+		fmt.Scanf("%d\n", &char)
+		switch char {
+		case 1:
+			var CL, DL int
+			fmt.Println("Current location postal code: ")
+			fmt.Scanf("%s\n", &CL)
+			fmt.Println("Destination location postal code: ")
+			fmt.Scanf("%s\n", &DL)
+		case 2:
+			fmt.Println("retrieving past trips")
 
-	switch char {
-	case 1:
-		var CL, DL int
-		fmt.Println("Current location postal code: ")
-		fmt.Scanf("%s\n", &CL)
-		fmt.Println("Destination location postal code: ")
-		fmt.Scanf("%s\n", &DL)
-	case 2:
-		fmt.Println("retrieving past trips")
-
-	case 3:
-		fmt.Println("editing account details")
-	case 4:
-		return
-	default:
-		fmt.Println("wrong input, please try again.")
+		case 3:
+			fmt.Println("editing account details")
+		case 4:
+			end = true
+		default:
+			fmt.Println("wrong input, please try again.")
+		}
 	}
 
 }
@@ -80,10 +70,13 @@ func main() {
 		fmt.Scanf("%d\n", &char)
 		switch char {
 		case 1:
-			PLogin() //log in
-			fmt.Println("1.Book a ride\n2.Retrieve past trips\n3.Edit account details\n4.Back")
-			fmt.Scanf("%d\n", &char)
-			passengeroptions(char)
+			var UN, Pw string
+			fmt.Println("Please enter your UserName: ")
+			fmt.Scanf("%d\n", &UN)
+			fmt.Println("Please enter your Password: ")
+			fmt.Scanf("%d\n", &Pw)
+			CheckLogin(db, UN, Pw)
+			passengeroptions()
 		case 2:
 			var UN, FN, LN, Email, Pw string
 			var MNo int
