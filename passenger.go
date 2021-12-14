@@ -18,7 +18,7 @@ type Passenger struct {
 
 func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for user verification
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/user_db")
-	results, err := db.Query("SELECT * FROM user_db.passenger")
+	results, err := db.Query("SELECT * FROM user_db.Passenger")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -34,10 +34,13 @@ func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for
 		//fmt.Println(passenger.UserName, passenger.FirstName, passenger.LastName, passenger.MobileNo, passenger.Email, passenger.Password)
 		PUser = append(PUser, Pssng)
 	}
-	fmt.Print(PUser) //just for testing
+	//fmt.Print(PUser) //just for testing
+	int := 0
+	fmt.Print(PUser)
 	for _, v := range PUser {
+		int++
 		if v.UserName == UN {
-			if v.Password == Pw {
+			if PUser[int].Password == Pw {
 				fmt.Println("you are logged in.")
 				return 1
 			} else {

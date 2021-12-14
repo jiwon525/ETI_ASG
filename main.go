@@ -36,7 +36,7 @@ func trips() { //opening database for trips
 }
 
 func passengeroptions() {
-	char := 0
+	var char int
 	var end bool
 	for end == false {
 		fmt.Println("1.Book a ride\n2.Retrieve past trips\n3.Edit account details\n4.Back")
@@ -54,7 +54,7 @@ func passengeroptions() {
 		case 3:
 			fmt.Println("editing account details")
 		case 4:
-			end = true
+			return
 		default:
 			fmt.Println("wrong input, please try again.")
 		}
@@ -70,14 +70,29 @@ func main() {
 		fmt.Scanf("%d\n", &char)
 		switch char {
 		case 1:
+			var end bool
 			var UN, Pw string
-			fmt.Println("Please enter your UserName: ")
-			fmt.Scanf("%d\n", &UN)
-			fmt.Println("Please enter your Password: ")
-			fmt.Scanf("%d\n", &Pw)
-			var PUser []Passenger
-			CheckLogin(db, PUser, UN, Pw)
-			passengeroptions()
+			for end == false {
+				fmt.Println("Please enter your UserName: ")
+				fmt.Scanf("%d\n", &UN)
+				fmt.Println("Please enter your Password: ")
+				fmt.Scanf("%d\n", &Pw)
+				var PUser []Passenger
+				loginstatus := CheckLogin(db, PUser, UN, Pw)
+				if loginstatus == 1 {
+					passengeroptions()
+					end = true
+				} else if loginstatus == 2 {
+					break
+				} else if loginstatus == 3 {
+					end = true
+				} else {
+					fmt.Println("error")
+					end = true
+				}
+
+			}
+
 		case 2:
 			var UN, FN, LN, Email, Pw string
 			var MNo int
