@@ -18,6 +18,9 @@ type Drivers struct {
 	Availability int
 }
 
+func GetAvailDriver(db *sql.DB) {
+
+}
 func GetDriver(db *sql.DB) {
 	results, err := db.Query("Select * FROM driver_db.Driver")
 

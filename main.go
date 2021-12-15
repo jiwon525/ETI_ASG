@@ -12,7 +12,7 @@ import (
 var db *sql.DB
 
 func drivers() { //opening database for driver
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/user_db")
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
 
 	// handle error
 	if err != nil {
@@ -23,20 +23,9 @@ func drivers() { //opening database for driver
 	// defer the close till after the main function has finished executing
 	defer db.Close()
 }
-func trips() { //opening database for trips
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
-	// handle error
-	if err != nil {
-		panic(err.Error())
-	}
 
-	fmt.Println("Database opened")
-	// defer the close till after the main function has finished executing
-	defer db.Close()
-}
-
-func passengeroptions() {
-	var char int
+func passengeroptions(Username string) {
+	char := 0
 	var end bool
 	for end == false {
 		fmt.Println("1.Book a ride\n2.Retrieve past trips\n3.Edit account details\n4.Back")
@@ -44,16 +33,19 @@ func passengeroptions() {
 		switch char {
 		case 1:
 			var CL, DL int
+
 			fmt.Println("Current location postal code: ")
-			fmt.Scanf("%s\n", &CL)
+			fmt.Scanf("%d\n", &CL)
 			fmt.Println("Destination location postal code: ")
-			fmt.Scanf("%s\n", &DL)
+			fmt.Scanf("%d\n", &DL)
+			NewTrip(db, CL, DL, Username)
 		case 2:
 			fmt.Println("retrieving past trips")
-
+			GetTrip(db, Username)
 		case 3:
 			fmt.Println("editing account details")
 		case 4:
+			end = true
 			return
 		default:
 			fmt.Println("wrong input, please try again.")
@@ -80,7 +72,7 @@ func main() {
 				var PUser []Passenger
 				loginstatus := CheckLogin(db, PUser, UN, Pw)
 				if loginstatus == 1 {
-					passengeroptions()
+					passengeroptions(UN)
 					end = true
 				} else if loginstatus == 2 {
 					break
