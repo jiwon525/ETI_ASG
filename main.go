@@ -11,19 +11,26 @@ import (
 
 var db *sql.DB
 
-func drivers() { //opening database for driver
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
-
-	// handle error
-	if err != nil {
-		panic(err.Error())
+func driveroptions(NRIC string) {
+	char := 0
+	var end bool
+	for end == false {
+		fmt.Println("1.Edit account details\n2.Initiate trip\n3.Back")
+		fmt.Scanf("%d\n", &char)
+		switch char {
+		case 1:
+			fmt.Println("editing account details")
+		case 2:
+			fmt.Println("get trip with their nric assigned and select to initiate trip")
+		case 3:
+			end = true
+			return
+		default:
+			fmt.Println("wrong input, please try again.")
+		}
 	}
 
-	fmt.Println("Database opened")
-	// defer the close till after the main function has finished executing
-	defer db.Close()
 }
-
 func passengeroptions(Username string) {
 	char := 0
 	var end bool
@@ -33,17 +40,35 @@ func passengeroptions(Username string) {
 		switch char {
 		case 1:
 			var CL, DL int
-
+			var Duser []Driver
 			fmt.Println("Current location postal code: ")
 			fmt.Scanf("%d\n", &CL)
 			fmt.Println("Destination location postal code: ")
 			fmt.Scanf("%d\n", &DL)
-			NewTrip(db, CL, DL, Username)
+			DI := GetAvailDriver(db, Duser)
+			if DI == "" {
+				continue
+			} else {
+				NewTrip(db, CL, DL, Username, DI)
+			}
+
 		case 2:
-			fmt.Println("retrieving past trips")
-			GetTrip(db, Username)
+			var ATrips []Trips
+			AllTrips(db, ATrips, Username)
 		case 3:
-			fmt.Println("editing account details")
+			var FN, LN, Email, Pw string
+			var MNo int
+			fmt.Println("Editing account details.\nPlease enter your new first name: ")
+			fmt.Scanf("%s\n", &FN)
+			fmt.Println("please enter your new last name: ")
+			fmt.Scanf("%s\n", &LN)
+			fmt.Println("please enter your new mobile number: ")
+			fmt.Scanf("%d\n", &MNo)
+			fmt.Println("please enter new your email: ")
+			fmt.Scanf("%s\n", &Email)
+			fmt.Println("please enter a new password to use: ")
+			fmt.Scanf("%s\n", &Pw)
+			EditPassenger(db, Username, FN, LN, MNo, Email, Pw)
 		case 4:
 			end = true
 			return
@@ -75,7 +100,7 @@ func main() {
 					passengeroptions(UN)
 					end = true
 				} else if loginstatus == 2 {
-					break
+					continue
 				} else if loginstatus == 3 {
 					end = true
 				} else {
@@ -106,7 +131,29 @@ func main() {
 			fmt.Println("successfully signed up, repeating details:\n" + "username: " + UN + "\nfull name: " + FN + LN + "\nmobile number: " + Mno + "\nEmail: " + Email + "\nPassword: " + Pw + "\n")
 
 		case 3:
-			fmt.Println("driver log in")
+			var end bool
+			var NRIC, Pw string
+			for end == false {
+				fmt.Println("Please enter your NRIC: ")
+				fmt.Scanf("%s\n", &NRIC)
+				fmt.Println("Please enter your Password: ")
+				fmt.Scanf("%s\n", &Pw)
+				var Duser []Driver
+				loginstatus := CheckDriver(db, Duser, NRIC, Pw)
+				if loginstatus == 1 {
+					driveroptions(NRIC)
+					end = true
+				} else if loginstatus == 2 {
+					continue
+				} else if loginstatus == 3 {
+					end = true
+				} else {
+					fmt.Println("error")
+					end = true
+				}
+
+			}
+
 		case 4:
 			var FN, LN, Email, Pw, NRIC, CarL string
 			var MNo, Avail int

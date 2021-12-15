@@ -30,10 +30,11 @@ func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for
 		if err != nil {
 			panic(err.Error())
 		}
-		fmt.Println(passenger.UserName, passenger.FirstName, passenger.LastName, passenger.MobileNo, passenger.Email, passenger.Password)
+		//fmt.Println(passenger.UserName, passenger.FirstName, passenger.LastName, passenger.MobileNo, passenger.Email, passenger.Password) was used to check if the data is correct
+
 		PUser = append(PUser, passenger)
 	}
-	fmt.Println(PUser)
+	//fmt.Println(PUser) was used to check if data was correctly appended to list
 	for _, v := range PUser {
 		int := 0
 		if v.UserName == UN {
@@ -49,14 +50,8 @@ func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for
 		}
 
 	}
-	fmt.Println("you have not signed in before, or have entered the wrong username")
+	fmt.Println("you have not signed up before, or have entered the wrong username")
 	return 3
-}
-
-func HandleErr(err error) {
-	if err != nil {
-		panic(err.Error())
-	}
 }
 
 func NewPassenger(db *sql.DB, UN string, FN string, LN string, MNo int, Email string, Pw string) {
@@ -76,13 +71,21 @@ func NewPassenger(db *sql.DB, UN string, FN string, LN string, MNo int, Email st
 
 }
 
-func EditPassenger(db *sql.DB, UN string, FN string, LN string, MNo int, Email string, Pw string) {
+func EditPassenger(db *sql.DB, UN string, FN string, LN string, MNo int, Email string, Pw string) { //need to edit
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/user_db")
-	query := fmt.Sprintf(
-		"UPDATE Persons SET FirstName='%s', LastName='%s', MobileNumber=%d, Email='%s', Password='%s', WHERE UserName='%s'",
-		FN, LN, MNo, Email, Pw, UN)
-	_, err = db.Exec(query)
+	sqlStatement2 := fmt.Sprintf("UPDATE Persons SET FirstName='%s', LastName='%s', MobileNo=%d, Email='%s', Password='%s', WHERE UserName='%s'", FN, LN, MNo, Email, Pw, UN)
+	_, err = db.Exec(sqlStatement2)
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
+
 } //EditRecord(db, 2, "Taylor", "Swift", 23)
+
+func BookRide(db *sql.DB, CL int, DL int, UN string, DI string) { //book a ride with username, open the database for trip, create new trip with the first driver in the list that is available
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
+	if err != nil {
+		panic(err)
+	}
+	NewTrip(db, CL, DL, UN, DI)
+
+}
