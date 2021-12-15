@@ -14,33 +14,33 @@ type Trips struct {
 	PUserName    int //passenger username
 }
 
-func GetTrip(db *sql.DB) {
-	results, err := db.Query("Select * FROM trip_db.Trip")
+func GetTrip(db *sql.DB, Username string) {
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
+	results, err := db.Query("Select * FROM trip_db.Trip WHILE USERNAME : 's%' ", Username)
 
 	if err != nil {
 		panic(err.Error())
 	}
-
+	counter := 0
 	for results.Next() {
-		// map this type to the record in the table
 		var trip Trips
 		err = results.Scan(&trip.CurrLocation, &trip.DestLocation,
-			&trip.DriverID)
+			&trip.DriverID, &trip.PUserName)
 		if err != nil {
 			panic(err.Error())
 		}
 
-		fmt.Println(trip.CurrLocation, trip.DestLocation,
-			trip.DriverID)
+		fmt.Println(trip.CurrLocation, trip.DestLocation, //to print out the trips that user of the certain username.
+			trip.DriverID, trip.PUserName)
+		counter++
 	}
 }
-func NewTrip(db *sql.DB, CL int, DL int, D string) {
-	query := fmt.Sprintf("INSERT INTO Trip VALUES (%d, %d,'%s')",
-		CL, DL, D)
+func NewTrip(db *sql.DB, CL int, DL int, UN string) {
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
+	sqlStatement := fmt.Sprintf("INSERT INTO Trip (CurrLocation, DestLocation, UserName) VALUES (%d,%d,'%s')", CL, DL, UN)
 
-	_, err := db.Query(query)
-
+	_, err = db.Exec(sqlStatement)
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 }

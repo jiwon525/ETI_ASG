@@ -34,11 +34,8 @@ func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for
 		//fmt.Println(passenger.UserName, passenger.FirstName, passenger.LastName, passenger.MobileNo, passenger.Email, passenger.Password)
 		PUser = append(PUser, Pssng)
 	}
-	//fmt.Print(PUser) //just for testing
-	int := 0
-	fmt.Print(PUser)
 	for _, v := range PUser {
-		int++
+		int := 0
 		if v.UserName == UN {
 			if PUser[int].Password == Pw {
 				fmt.Println("you are logged in.")
@@ -48,9 +45,11 @@ func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for
 				return 2
 			}
 		} else {
+			int++
 			fmt.Println("you have not signed in before, or have entered the wrong username")
 			return 3
 		}
+
 	}
 	return 0
 }
