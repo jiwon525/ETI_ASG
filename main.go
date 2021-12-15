@@ -66,9 +66,9 @@ func main() {
 			var UN, Pw string
 			for end == false {
 				fmt.Println("Please enter your UserName: ")
-				fmt.Scanf("%d\n", &UN)
+				fmt.Scanf("%s\n", &UN)
 				fmt.Println("Please enter your Password: ")
-				fmt.Scanf("%d\n", &Pw)
+				fmt.Scanf("%s\n", &Pw)
 				var PUser []Passenger
 				loginstatus := CheckLogin(db, PUser, UN, Pw)
 				if loginstatus == 1 {

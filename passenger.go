@@ -22,7 +22,6 @@ func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for
 	if err != nil {
 		panic(err.Error())
 	}
-	var Pssng Passenger
 	defer results.Close()
 	for results.Next() {
 		// map this type to the record in the table
@@ -31,13 +30,14 @@ func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for
 		if err != nil {
 			panic(err.Error())
 		}
-		//fmt.Println(passenger.UserName, passenger.FirstName, passenger.LastName, passenger.MobileNo, passenger.Email, passenger.Password)
-		PUser = append(PUser, Pssng)
+		fmt.Println(passenger.UserName, passenger.FirstName, passenger.LastName, passenger.MobileNo, passenger.Email, passenger.Password)
+		PUser = append(PUser, passenger)
 	}
+	fmt.Println(PUser)
 	for _, v := range PUser {
 		int := 0
 		if v.UserName == UN {
-			if PUser[int].Password == Pw {
+			if v.Password == Pw {
 				fmt.Println("you are logged in.")
 				return 1
 			} else {
@@ -46,12 +46,11 @@ func CheckLogin(db *sql.DB, PUser []Passenger, UN string, Pw string) int { //for
 			}
 		} else {
 			int++
-			fmt.Println("you have not signed in before, or have entered the wrong username")
-			return 3
 		}
 
 	}
-	return 0
+	fmt.Println("you have not signed in before, or have entered the wrong username")
+	return 3
 }
 
 func HandleErr(err error) {
