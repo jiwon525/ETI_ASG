@@ -18,7 +18,7 @@ func driveroptions(NRIC string) {
 	//TID := FindTripID(db, DID, ATrips) to find trip id, but not needed.
 	var end bool
 	for end == false {
-		fmt.Println("1.Initiate trip\n2.Edit account details\n3.Back")
+		fmt.Println("1.Initiate trip\n2.Edit account details\n3.Log out")
 		fmt.Scanf("%d\n", &char)
 		switch char {
 		case 1:
@@ -81,7 +81,7 @@ func passengeroptions(Username string) {
 	ID := FindPassengerID(db, Username, Puser)
 	var end bool
 	for end == false {
-		fmt.Println("\n1.Book a ride\n2.See status of current Trip\n3.Retrieve past trips\n4.Edit account details\n5.Back")
+		fmt.Println("\n1.Book a ride\n2.See status of current Trip\n3.Retrieve past trips\n4.Edit account details\n5.Log out")
 		fmt.Scanf("%d\n", &char)
 		switch char {
 		case 1:
@@ -97,10 +97,11 @@ func passengeroptions(Username string) {
 			} else {
 				NewTrip(db, CL, DL, ID, DI, Username)
 			}
-
 		case 2:
-			AllTrips(db, ATrips, ID, 0) //if there are no trips, to print something like sorry, no past trips
+			TripStatus(db, ID, ATrips)
 		case 3:
+			AllTrips(db, ATrips, ID) //if there are no trips, to print something like sorry, no past trips
+		case 4:
 			var FN, LN, Email, Pw string
 			var MNo int
 			fmt.Println("Editing account details.\nPlease enter your new first name: ")
@@ -114,7 +115,7 @@ func passengeroptions(Username string) {
 			fmt.Println("please enter a new password to use: ")
 			fmt.Scanf("%s\n", &Pw)
 			EditPassenger(db, Username, FN, LN, MNo, Email, Pw, ID)
-		case 4:
+		case 5:
 			end = true
 			return
 		default:

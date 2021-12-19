@@ -33,6 +33,7 @@ func ScanTripDB(db *sql.DB, T []Trips) []Trips {
 			panic(err.Error())
 		}
 		T = append(T, trip)
+		fmt.Println(T)
 	}
 	return T
 }
@@ -57,7 +58,7 @@ func GetTrip(db *sql.DB, Username string) {
 }
 func NewTrip(db *sql.DB, CL int, DL int, PassengerID int, DriverID int, UN string) { //current location, destination location, username, driver ID
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/trip_db")
-	sqlStatement := fmt.Sprintf("INSERT INTO Trip (CurrLocation, DestLocation, DriverID, PassengerID, StartTrip, EndTrip) VALUES (%d,%d,%d,%d,%t, %t)", CL, DL, PassengerID, DriverID, false, false)
+	sqlStatement := fmt.Sprintf("INSERT INTO Trip (CurrLocation, DestLocation, DriverID, PassengerID, StartTrip, EndTrip) VALUES (%d,%d,%d,%d,%t, %t)", CL, DL, DriverID, PassengerID, false, false)
 	_, err = db.Exec(sqlStatement)
 	if err != nil {
 		panic(err)
@@ -66,10 +67,10 @@ func NewTrip(db *sql.DB, CL int, DL int, PassengerID int, DriverID int, UN strin
 	fmt.Println("Current Location: " + cl + "\nDestination Location : " + dl + "\nYour Username: " + UN + "\nDriver details: " + did + "\nPlease wait for the driver.")
 }
 
-func AllTrips(db *sql.DB, ATrips []Trips, PID int, DID int) { //for printing of all past trips
+func AllTrips(db *sql.DB, ATrips []Trips, PID int) { //for printing of all past trips
 	aTrips := ScanTripDB(db, ATrips)
 	for _, v := range aTrips {
-		if v.PassengerID == PID || v.DestLocation == DID {
+		if v.PassengerID == PID {
 			aTrips = append(aTrips, v)
 		}
 		cl := strconv.Itoa(v.CurrLocation)
@@ -164,6 +165,29 @@ func DeleteTrip(db *sql.DB, DID int, T []Trips) {
 		}
 	}
 	fmt.Println("trip does not exist.")
+	return
+}
+
+func TripStatus(db *sql.DB, PID int, T []Trips) {
+	aTrips := ScanTripDB(db, T)
+	for _, v := range aTrips {
+		if v.PassengerID == PID {
+			if v.StartTrip == false {
+				if v.EndTrip == true {
+					fmt.Println("Your driver has cancelled. Please try booking again")
+				} else {
+					fmt.Println("Your driver has not picked you up")
+				}
+			} else {
+				if v.EndTrip == false {
+					fmt.Println("Driver has initiated the ride, you are on your way to your destination")
+				} else {
+					fmt.Println("Your trip has ended.")
+				}
+
+			}
+		}
+	}
 	return
 }
 
