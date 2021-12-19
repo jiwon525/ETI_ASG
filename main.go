@@ -6,22 +6,64 @@ import (
 	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
-	//P "./passenger"
 )
 
 var db *sql.DB
 
 func driveroptions(NRIC string) {
 	char := 0
+	var ATrips []Trips
+	var Duser []Driver
+	DID := FindDriverID(db, NRIC, Duser)
+	//TID := FindTripID(db, DID, ATrips) to find trip id, but not needed.
 	var end bool
 	for end == false {
-		fmt.Println("1.Edit account details\n2.Initiate trip\n3.Back")
+		fmt.Println("1.Initiate trip\n2.Edit account details\n3.Back")
 		fmt.Scanf("%d\n", &char)
 		switch char {
 		case 1:
-			fmt.Println("editing account details")
+			option := 0
+			fmt.Println("1.Start trip\n2.End Trip\n3.Back")
+			fmt.Scanf("%d\n", &option)
+			if option == 1 {
+				fmt.Println("initiating trip")
+				TripsAssigned(db, DID, ATrips)
+				fmt.Println("Would you like to accept? y for yes n for no")
+				var trip string
+				fmt.Scanf("%s\n", &trip)
+				if trip == "y" {
+					InitiateStartTrip(db, DID, ATrips)
+				} else if trip == "n" {
+					DeleteTrip(db, DID, ATrips)
+				}
+
+			} else if option == 2 {
+				InitiateEndTrip(db, DID, ATrips)
+			} else if option == 3 {
+				continue
+			} else {
+				fmt.Println("wrong input, try again")
+				continue
+			}
 		case 2:
-			fmt.Println("get trip with their nric assigned and select to initiate trip")
+			var FN, LN, Email, Pw, Cl string
+			var MNo int
+			var Avail bool
+			fmt.Println("Editing account details.\nPlease enter your new first name: ")
+			fmt.Scanf("%s\n", &FN)
+			fmt.Println("please enter your new last name: ")
+			fmt.Scanf("%s\n", &LN)
+			fmt.Println("please enter your new mobile number: ") //to have check if their nmbers are the correct number
+			fmt.Scanf("%d\n", &MNo)
+			fmt.Println("please enter new your email: ")
+			fmt.Scanf("%s\n", &Email)
+			fmt.Println("please enter new your car license: ")
+			fmt.Scanf("%s\n", &Cl)
+			fmt.Println("please enter a new password to use: ")
+			fmt.Scanf("%s\n", &Pw)
+			Avail = false
+			EditDriver(db, DID, FN, LN, MNo, Email, Pw, NRIC, Cl, Avail)
+			fmt.Println("Details have been updated.")
 		case 3:
 			end = true
 			return
@@ -33,28 +75,31 @@ func driveroptions(NRIC string) {
 }
 func passengeroptions(Username string) {
 	char := 0
+	var ATrips []Trips
+	var Duser []Driver
+	var Puser []Passenger
+	ID := FindPassengerID(db, Username, Puser)
 	var end bool
 	for end == false {
-		fmt.Println("1.Book a ride\n2.Retrieve past trips\n3.Edit account details\n4.Back")
+		fmt.Println("\n1.Book a ride\n2.See status of current Trip\n3.Retrieve past trips\n4.Edit account details\n5.Back")
 		fmt.Scanf("%d\n", &char)
 		switch char {
 		case 1:
 			var CL, DL int
-			var Duser []Driver
+
 			fmt.Println("Current location postal code: ")
 			fmt.Scanf("%d\n", &CL)
 			fmt.Println("Destination location postal code: ")
 			fmt.Scanf("%d\n", &DL)
 			DI := GetAvailDriver(db, Duser)
-			if DI == "" {
+			if DI == 0 {
 				continue
 			} else {
-				NewTrip(db, CL, DL, Username, DI)
+				NewTrip(db, CL, DL, ID, DI, Username)
 			}
 
 		case 2:
-			var ATrips []Trips
-			AllTrips(db, ATrips, Username)
+			AllTrips(db, ATrips, ID, 0) //if there are no trips, to print something like sorry, no past trips
 		case 3:
 			var FN, LN, Email, Pw string
 			var MNo int
@@ -62,13 +107,13 @@ func passengeroptions(Username string) {
 			fmt.Scanf("%s\n", &FN)
 			fmt.Println("please enter your new last name: ")
 			fmt.Scanf("%s\n", &LN)
-			fmt.Println("please enter your new mobile number: ")
+			fmt.Println("please enter your new mobile number: ") //to have check if their nmbers are the correct number
 			fmt.Scanf("%d\n", &MNo)
 			fmt.Println("please enter new your email: ")
 			fmt.Scanf("%s\n", &Email)
 			fmt.Println("please enter a new password to use: ")
 			fmt.Scanf("%s\n", &Pw)
-			EditPassenger(db, Username, FN, LN, MNo, Email, Pw)
+			EditPassenger(db, Username, FN, LN, MNo, Email, Pw, ID)
 		case 4:
 			end = true
 			return
@@ -128,7 +173,7 @@ func main() {
 			fmt.Println("please enter a password to use")
 			fmt.Scanf("%s\n", &Pw)
 			NewPassenger(db, UN, FN, LN, MNo, Email, Pw)
-			fmt.Println("successfully signed up, repeating details:\n" + "username: " + UN + "\nfull name: " + FN + LN + "\nmobile number: " + Mno + "\nEmail: " + Email + "\nPassword: " + Pw + "\n")
+			fmt.Println("\nsuccessfully signed up, repeating details:\n" + "username: " + UN + "\nfull name: " + FN + LN + "\nmobile number: " + Mno + "\nEmail: " + Email + "\nPassword: " + Pw + "\n")
 
 		case 3:
 			var end bool
@@ -156,7 +201,7 @@ func main() {
 
 		case 4:
 			var FN, LN, Email, Pw, NRIC, CarL string
-			var MNo, Avail int
+			var MNo int
 			fmt.Println("please enter your first name")
 			fmt.Scanf("%s\n", &FN)
 			fmt.Println("please enter your last name")
@@ -172,7 +217,7 @@ func main() {
 			fmt.Scanf("%s\n", &NRIC)
 			fmt.Println("please enter Car License")
 			fmt.Scanf("%s\n", &CarL)
-			Avail = 0
+			Avail := false
 			NewDriver(db, FN, LN, MNo, Email, Pw, NRIC, CarL, Avail)
 			fmt.Println("successfully signed up, repeating details:\n" + "full name: " + FN + LN + "\nmobile number: " + Mno + "\nEmail: " + Email + "\nPassword: " + Pw + "\nNRIC: " + NRIC + "\nCar License: " + CarL + "\n")
 
