@@ -15,10 +15,11 @@ type Driver struct {
 	Password     string
 	NRIC         string
 	Carlicense   string
-	Availability int
+	Availability bool
+	DriverID     int
 }
 
-func CheckDriver(db *sql.DB, DUser []Driver, nric string, Pw string) int { //for driver verification
+func ScanDriverDB(db *sql.DB, DUser []Driver) []Driver {
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
 	results, err := db.Query("SELECT * FROM driver_db.Driver")
 	if err != nil {
@@ -28,16 +29,19 @@ func CheckDriver(db *sql.DB, DUser []Driver, nric string, Pw string) int { //for
 	for results.Next() {
 		// map this type to the record in the table
 		var driver Driver
-		err = results.Scan(&driver.FirstName, &driver.LastName,
+		err = results.Scan(&driver.DriverID, &driver.FirstName, &driver.LastName,
 			&driver.MobileNo, &driver.Email, &driver.Password, &driver.NRIC, &driver.Carlicense, &driver.Availability)
 		if err != nil {
 			panic(err.Error())
 		}
 		DUser = append(DUser, driver)
 	}
+	return DUser
+}
+func CheckDriver(db *sql.DB, DUser []Driver, nric string, Pw string) int { //for driver verification
+	DriverList := ScanDriverDB(db, DUser)
 	//fmt.Println(DUser) was used to check if data was correctly appended to list
-	for _, v := range DUser {
-		int := 0
+	for _, v := range DriverList {
 		if v.NRIC == nric {
 			if v.Password == Pw {
 				fmt.Println("you are logged in.")
@@ -46,56 +50,40 @@ func CheckDriver(db *sql.DB, DUser []Driver, nric string, Pw string) int { //for
 				fmt.Println("driver NRIC found but password is wrong")
 				return 2
 			}
-		} else {
-			int++
 		}
 	}
 	fmt.Println("you have not signed up before, or have entered the wrong username")
 	return 3
 }
 
-func GetAvailDriver(db *sql.DB, DUser []Driver) string {
-	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
-	results, err := db.Query("SELECT * FROM driver_db.Driver")
-	if err != nil {
-		panic(err.Error())
-	}
-	var driver Driver
+func GetAvailDriver(db *sql.DB, DUser []Driver) int {
+	DriverList := ScanDriverDB(db, DUser)
 	var availdriver []Driver
-	defer results.Close()
-	for results.Next() {
-		// map this type to the record in the table
-
-		err = results.Scan(&driver.FirstName, &driver.LastName,
-			&driver.MobileNo, &driver.Email, &driver.Password, &driver.NRIC, &driver.Carlicense, &driver.Availability)
-		if err != nil {
-			panic(err.Error())
-		}
-		DUser = append(DUser, driver)
-
-		for _, v := range DUser {
-			int := 0
-			if v.Availability == 0 {
-				fmt.Println("your driver is " + v.FirstName + v.LastName)
-				availdriver = append(availdriver, v)
-				EditDriver(db, v.FirstName, v.LastName, v.MobileNo, v.Email, v.Password, v.NRIC, v.Carlicense, 1)
-				return v.NRIC
-			} else {
-				int++
-				continue
-			}
-		}
-		if availdriver == nil {
-			fmt.Println("there are no available drivers at the moment, please wait")
-			return ""
+	for _, v := range DriverList {
+		if v.Availability == false {
+			fmt.Println("your driver is " + v.FirstName + v.LastName)
+			availdriver = append(availdriver, v)
+			avail := true
+			EditDriver(db, v.DriverID, v.FirstName, v.LastName, v.MobileNo, v.Email, v.Password, v.NRIC, v.Carlicense, avail)
+			return v.DriverID
 		}
 	}
-	return ""
+	if availdriver == nil {
+		fmt.Println("there are no available drivers at the moment, please wait")
+		return 0
+	}
+	return 0
 }
 
-func NewDriver(db *sql.DB, FN string, LN string, MNo int, Email string, Pw string, NRIC string, CL string, Avail int) {
+func NewDriver(db *sql.DB, FN string, LN string, MNo int, Email string, Pw string, NRIC string, CL string, Avail bool) {
 	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
-	sqlStatement := fmt.Sprintf("INSERT INTO Driver (FirstName, LastName, MobileNo, Email, Password, NRIC, CarLicense, Availability) VALUES ('%s', '%s', %d , '%s', '%s', '%s', '%s', %d)", FN, LN, MNo, Email, Pw, NRIC, CL, Avail)
+	/*var numb int
+	if Avail == true {
+		numb = 1
+	} else {
+		numb = 0
+	}*/
+	sqlStatement := fmt.Sprintf("INSERT INTO Driver (FirstName, LastName, MobileNo, Email, Password, NRIC, Carlicense, Availability) VALUES ('%s', '%s', %d , '%s', '%s', '%s', '%s', %t)", FN, LN, MNo, Email, Pw, NRIC, CL, Avail)
 
 	_, err = db.Exec(sqlStatement)
 	if err != nil {
@@ -103,36 +91,22 @@ func NewDriver(db *sql.DB, FN string, LN string, MNo int, Email string, Pw strin
 	}
 }
 
-func EditDriver(db *sql.DB, FN string, LN string, MNo int, Email string, Pw string, NRIC string, CL string, Avail int) {
-	query := fmt.Sprintf(
-		"UPDATE Driver SET FirstName='%s', LastName='%s', MobileNo=%d, Email='%s', Password='%s', CarLicense='%s', Availability = %d WHERE NRIC='%s'",
-		FN, LN, MNo, Email, Pw, CL, Avail, NRIC)
-	_, err := db.Exec(query)
+func EditDriver(db *sql.DB, ID int, FN string, LN string, MNo int, Email string, Pw string, NRIC string, CL string, Avail bool) {
+	db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/driver_db")
+	sqlStatement2 := fmt.Sprintf("UPDATE Driver SET FirstName='%s', LastName='%s', MobileNo=%d, Email='%s', Password='%s', NRIC='%s', Carlicense='%s', Availability=%t WHERE DriverID = %d", FN, LN, MNo, Email, Pw, NRIC, CL, Avail, ID)
+	_, err = db.Exec(sqlStatement2)
 	if err != nil {
-		panic(err.Error())
-
-	}
-} //EditRecord(db, 2, "Taylor", "Swift", 23)
-
-/*
-
-func GetDriver(db *sql.DB) {
-	results, err := db.Query("Select * FROM driver_db.Driver")
-
-	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 
-	for results.Next() {
-		// map this type to the record in the table
-		var driver Driver
-		err = results.Scan(&driver.FirstName, &driver.LastName,
-			&driver.MobileNo, &driver.Email, &driver.Password, &driver.NRIC, &driver.Carlicense)
-		if err != nil {
-			panic(err.Error())
+}
+
+func FindDriverID(db *sql.DB, NRIC string, DUser []Driver) int {
+	DriverList := ScanDriverDB(db, DUser)
+	for _, v := range DriverList {
+		if v.NRIC == NRIC {
+			return v.DriverID
 		}
-
-		fmt.Println(driver.FirstName, driver.LastName,
-			driver.MobileNo, driver.Email, driver.Password, driver.NRIC, driver.Carlicense)
 	}
-}*/
+	return 0
+}
