@@ -33,7 +33,7 @@ func ScanTripDB(db *sql.DB, T []Trips) []Trips {
 			panic(err.Error())
 		}
 		T = append(T, trip)
-		fmt.Println(T)
+		//fmt.Println(T)
 	}
 	return T
 }
@@ -175,14 +175,14 @@ func TripStatus(db *sql.DB, PID int, T []Trips) {
 			if v.StartTrip == false {
 				if v.EndTrip == true {
 					fmt.Println("Your driver has cancelled. Please try booking again")
-				} else {
+				} else if v.EndTrip == false {
 					fmt.Println("Your driver has not picked you up")
 				}
 			} else {
 				if v.EndTrip == false {
 					fmt.Println("Driver has initiated the ride, you are on your way to your destination")
 				} else {
-					fmt.Println("Your trip has ended.")
+					fmt.Println("Your trip has ended.") //issue of printing here
 				}
 
 			}
